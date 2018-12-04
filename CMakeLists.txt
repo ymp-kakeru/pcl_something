@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5.1)
 project(pcl_something)
+
+set(CMAKE_CXX_STANDARD 14)
 
 find_package(PCL REQUIRED COMPONENTS
 	core
@@ -33,4 +35,8 @@ set(LIBS
 )
 
 add_executable(pcl_grid_node src/pcl_grid.cpp)
+add_executable(planeDetect_node src/plane_segment.cpp)
+add_executable(example src/example.cpp)
+target_link_libraries(example ${catkin_LIBRARIES})
 target_link_libraries(pcl_grid_node ${LIBS})
+target_link_libraries(planeDetect_node ${LIBS})

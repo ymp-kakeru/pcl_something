@@ -18,55 +18,55 @@
 
 #include <pcl_ros/point_cloud.h>
 
-using namespace std;
+typedef pcl::PointXYZ PointT;
 
-class PCL_segmentation{
+class PCL_segmentation
+{
 public:
   PCL_segmentation();
 
-  void planeDetect(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double threshold);
-  void planeRemove(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointIndices::Ptr inliers, bool negative);
+  void planeDetect(pcl::PointCloud<PointT>::Ptr cloud, double threshold);
+  void planeRemove(pcl::PointCloud<PointT>::Ptr cloud, pcl::PointIndices::Ptr inliers, bool negative);
+  pcl::PointCloud<PointT>::Ptr cloud(pcl::PointCloud<PointT>);
+  pcl::ModelCoefficients::Ptr coefficients(pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr inliers(pcl::PointIndices);
 
 private:
-  void cloud_Cb(const sensor_msgs::PointCloud2::ConstPtr& input);
-
-  ros::NodeHandle nh_;
-  ros::Subscriber cloud_sub;
-  //ros::Publishr map_pub;
-
-  pcl::PointCloud<pcl::PointXYZ> cloud ;
-  pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-  pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+void cloud_Cb(const sensor_msgs::PointCloud2ConstPtr& input)
+{
+  //rosメッセージであるPointCloud2型からpclで使用される型への変換
+  pcl::fromROSMsg (*input, &cloud);
+  //voxelgridによるダウンサンプリング
+  pcl::VoxelGrid<sensor_msgs::PointCloud2> sor;
+  sor.setInputCLoud(input);
+  sor.setLeafSize(0.1, 0.1, 0.1);
+  sor.filter(*cloud);
+  //RANSACを用いて平面検出および平面除去
+//  planeDetect(&cloud, threshold);
+//  planeRemove(&cloud, inliers, negative);
+}
 
   double threshold;
-
+  ros::NodeHandle nh_;
+  ros::Subscriber cloud_sub ;
+//  ros::Publishr map_pub;
 };
 
 PCL_segmentation::PCL_segmentation():
   threshold{0.1}
 {
-  cloud_sub = nh_.subscribe<sensor_msgs::PointCloud2>("/input_cloud",1,cloud_Cb);
+  cloud_sub = nh_.subscribe("/input_cloud",10,&PCL_segmentation::cloud_Cb,this);
   //map_pub = nh_.advertise<>();
 }
 
-void cloud_Cb(const sensor_msgs::PointCloud2::ConstPtr& input)
-{
-  //rosメッセージであるPointCloud2型からpclで使用される型への変換
-  pcl::fromROSMsg (*input, cloud);
-  //voxelgridによるダウンサンプリング
-  pcl::VoxelGrid<sensor_msgs::PointCLoud2> sor;
-  sor.setInputCLoud(input);
-  sor.LeafSize(0.1, 0.1, 0.1);
-  sor.filter(cloud);
-  //RANSACを用いて平面検出および平面除去
-  planeDetect(cloud, threshold);
-  planeRemove(cloud, inliers, negative);
-}
 
-void planeDetect(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double threshold)
+/*void planeDetect(pcl::PointCloud<PointT>::Ptr cloud, double threshold)
 {
   //inliers : 平面抽出で得た点群のインデックス inliers->indices[0]
   //coefficients : 三次元平面方程式の未知数？？
+  inliers = &PCL_segmentation::inliers;
+  coefficients = &PCL_segmentation::coefficients;
+
   pcl::SACSegmentation<pcl::PointXYZ> seg;
   seg.setOptimizeCoefficients(true);
   seg.setInputCloud(cloud);
@@ -89,12 +89,20 @@ void planeDetect(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double threshold)
 
 }
 
-void planeRemove(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointIndices::Ptr inliers, bool negative)
+void planeRemove(pcl::PointCloud<PointT>::Ptr cloud, pcl::PointIndices::Ptr inliers, bool negative)
 {
-  pcl::ExtractIndices<pcl::PointXYZ> extract ;
+
+  inliers = &PCL_segmentation::inliers;
+  pcl::ExtractIndices<PointT> extract ;
   extract.setInputCloud(cloud); //入力点群
   extract.setIndices(inliers); //指定平面
   extract.setNegative(true); //true:remove Plane , false:remove without Plane
   extract.filter(*cloud); //出力点群
 }
-
+*/
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "plane_segment");
+  //PCL_segmentation pcl_segmentation;
+  ros::spin();
+}
