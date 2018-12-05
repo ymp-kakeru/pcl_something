@@ -5,11 +5,10 @@ set(CMAKE_CXX_STANDARD 14)
 
 find_package(PCL REQUIRED COMPONENTS
 	core
-	features
 	filters
 	io
 	segmentation
-	surface
+  pcl_conversions
 )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -18,8 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   pcl_ros
-  pcl_conversions
-  pcl_msgs
   tf
   tf_conversions
 )

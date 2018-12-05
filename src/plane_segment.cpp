@@ -16,8 +16,6 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <pcl_ros/point_cloud.h>
-
 typedef pcl::PointXYZ PointT;
 
 class PCL_segmentation
@@ -25,27 +23,15 @@ class PCL_segmentation
 public:
   PCL_segmentation();
 
-  void planeDetect(pcl::PointCloud<PointT>::Ptr cloud, double threshold);
-  void planeRemove(pcl::PointCloud<PointT>::Ptr cloud, pcl::PointIndices::Ptr inliers, bool negative);
-  pcl::PointCloud<PointT>::Ptr cloud(pcl::PointCloud<PointT>);
-  pcl::ModelCoefficients::Ptr coefficients(pcl::ModelCoefficients);
-  pcl::PointIndices::Ptr inliers(pcl::PointIndices);
+  void planeDetect();
+  void planeRemove();
+//  pcl::PointCloud<PointT>::Ptr cloud(pcl::PointCloud<PointT>);
+  pcl::PointCloud<PointT> cloud;
+  pcl::ModelCoefficients coefficients;
+  pcl::PointIndices inliers;
 
 private:
-void cloud_Cb(const sensor_msgs::PointCloud2ConstPtr& input)
-{
-  //rosメッセージであるPointCloud2型からpclで使用される型への変換
-  pcl::fromROSMsg (*input, &cloud);
-  //voxelgridによるダウンサンプリング
-  pcl::VoxelGrid<sensor_msgs::PointCloud2> sor;
-  sor.setInputCLoud(input);
-  sor.setLeafSize(0.1, 0.1, 0.1);
-  sor.filter(*cloud);
-  //RANSACを用いて平面検出および平面除去
-//  planeDetect(&cloud, threshold);
-//  planeRemove(&cloud, inliers, negative);
-}
-
+  void cloud_Cb(const sensor_msgs::PointCloud2ConstPtr& input);
   double threshold;
   ros::NodeHandle nh_;
   ros::Subscriber cloud_sub ;
@@ -59,47 +45,53 @@ PCL_segmentation::PCL_segmentation():
   //map_pub = nh_.advertise<>();
 }
 
-
-/*void planeDetect(pcl::PointCloud<PointT>::Ptr cloud, double threshold)
+void PCL_segmentation::cloud_Cb(const sensor_msgs::PointCloud2ConstPtr& input)
 {
-  //inliers : 平面抽出で得た点群のインデックス inliers->indices[0]
-  //coefficients : 三次元平面方程式の未知数？？
-  inliers = &PCL_segmentation::inliers;
-  coefficients = &PCL_segmentation::coefficients;
+  //rosメッセージであるPointCloud2型からpclで使用される型への変換
+  pcl::fromROSMsg (*input, PCL_segmentation::cloud);
+  //voxelgridによるダウンサンプリング
+  pcl::VoxelGrid<PointT> sor;
+  sor.setInputCloud (cloud.makeShared());
+  sor.setLeafSize (0.1, 0.1, 0.1);
+  sor.filter (cloud);
+  //RANSACを用いて平面検出および平面除去
+  planeDetect();
+//  planeRemove(&cloud, inliers, negative);
+}
 
-  pcl::SACSegmentation<pcl::PointXYZ> seg;
+void PCL_segmentation::planeDetect()
+{
+  //inliers : 平面抽出で得た点群のインデックス inliers.indices[0]
+  //coefficients : 三次元平面方程式の未知数 ax+by+cz+d
+
+  pcl::SACSegmentation<PointT> seg;
   seg.setOptimizeCoefficients(true);
-  seg.setInputCloud(cloud);
+  seg.setInputCloud (cloud.makeShared());
   seg.setModelType(pcl::SACMODEL_PLANE);
   seg.setMethodType(pcl::SAC_RANSAC);
   seg.setDistanceThreshold(threshold);
-  seg.segment(*inliers, *coefficients); 
+  seg.segment(inliers, coefficients); 
 
-   if (inliers->indices.size () == 0)
+   if (inliers.indices.size () == 0)
   {
     PCL_ERROR ("Could not estimate a planar model for the given dataset.");
-    return (-1);
+//    return (-1);
   }
-  std::cerr << "Model coefficients:" << coefficients->values[0] << "x"
-                                     << coefficients->values[1] << "y"
-                                     << coefficients->values[2] << "z"
-                                     << coefficients->values[3] << std::endl ;
-
-  
-
+  std::cerr << "Model coefficients:" << coefficients.values[0] << "x"
+                                     << coefficients.values[1] << "y"
+                                     << coefficients.values[2] << "z"
+                                     << coefficients.values[3] << std::endl ;
 }
 
-void planeRemove(pcl::PointCloud<PointT>::Ptr cloud, pcl::PointIndices::Ptr inliers, bool negative)
+/*void PCL_segmentation::planeRemove()
 {
-
-  inliers = &PCL_segmentation::inliers;
   pcl::ExtractIndices<PointT> extract ;
-  extract.setInputCloud(cloud); //入力点群
+  extract.setInputCloud(cloud.makeShared()); //入力点群
   extract.setIndices(inliers); //指定平面
   extract.setNegative(true); //true:remove Plane , false:remove without Plane
-  extract.filter(*cloud); //出力点群
-}
-*/
+  extract.filter(cloud); //出力点群
+}*/
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "plane_segment");
