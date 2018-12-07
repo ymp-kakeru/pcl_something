@@ -1,16 +1,26 @@
 <launch>
 	<!--rosbag play from bagpath/bagfile.bag-->
 	<param name="use_sim_time" value="true" />
-	<arg name="bagpath" default="/home/kakeru/catkin_ws/src/pclbags"/>
-	<arg name="bagfile" default="kensyu.bag"/>
+	<arg name="bagpath" default="/home/ymp/catkin_ws/src/bagfiles/"/>
+	<arg name="bagfile" default="hill.bag"/>
 	<node pkg="rosbag" type="play" name="pcl_bag_player" args="--clock $(arg bagpath)/$(arg bagfile)" />
- 	<node pkg="tf" type="static_transform_publisher" name="cloud_tf" args="0 0 1 0 0 3.14 hokuyo3d cloud_tf 100" />
+<!-- 	<remap from="/hokuyo3d/hokuyo_cloud2" to="/input_cloud"/> -->
+ 	<node pkg="tf" type="static_transform_publisher" name="map_tf" args="0 0 1 0 0 3.14 hokuyo3d map_tf 100" />
+
+<!--   <node name="pcd_to_pointcloud" pkg="pcl_ros" type="pcd_to_pointcloud" 
+        args="$(find pcl_something)/hill_map.pcd 0.1">
+    <param name="frame_id" value="map"/>
+    <remap from="cloud_pcd" to="/input_cloud" />
+  </node> -->
+  <!-- tf -->
+<!--   <node name="map_tf" pkg="tf" type="static_transform_publisher" args="0 0 1 0 0 3.14 map map_tf 100" /> -->
 
 	<node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
 
 	<!--Run a Voxel Grid filter for downsampling-->
 	<node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen" >
-		<remap from="~input" to="hokuyo3d/hokuyo_cloud2" />
+<!-- 		<remap from="~input" to="hokuyo3d/hokuyo_cloud2" /> -->
+		<remap from="~input" to="/hokuyo3d/hokuyo_cloud2" />
 		<remap from="~output" to="cloud_fd" />
 		<rosparam>
 filter_field_name: z
@@ -23,7 +33,7 @@ leaf_size: 0.1</rosparam>
     <!-- make ocupancy grid map -->
  	<node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
  		<param name="resolution" value="0.15" />
- 		<param name="frame_id" type="string" value="cloud_tf" />
+ 		<param name="frame_id" type="string" value="map_tf" />
  		<param name="sensor_model/max_range" value="10.0" />
  		<remap from="cloud_in" to="/cloud_fd" />
  	</node>
