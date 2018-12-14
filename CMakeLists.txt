@@ -38,6 +38,8 @@ add_executable(pcl_grid_node src/pcl_grid.cpp)
 add_executable(planeDetect src/plane_segment.cpp)
 add_executable(example src/example.cpp)
 add_executable(euclidean_clustering src/euclidean_cluster.cpp)
+# add_executable(euclidean_clustering src/euclid_alone.cpp)
+
 target_link_libraries(example ${catkin_LIBRARIES})
 target_link_libraries(pcl_grid_node ${LIBS})
 target_link_libraries(planeDetect ${LIBS})

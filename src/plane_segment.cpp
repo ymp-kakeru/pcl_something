@@ -43,14 +43,14 @@ private:
 PCL_segmentation::PCL_segmentation():
   threshold{0.1}
 {
-  debug();
+//  debug();
   cloud_sub = nh_.subscribe("/input_cloud",10,&PCL_segmentation::cloud_Cb,this);
   map_pub = nh_.advertise<sensor_msgs::PointCloud2>("/cloud_seg", 10);
 }
 
 void PCL_segmentation::cloud_Cb(const sensor_msgs::PointCloud2ConstPtr& input)
 {
-  debug();
+//  debug();
   //rosメッセージであるPointCloud2型からpclで使用される型への変換
   pcl::fromROSMsg (*input, PCL_segmentation::cloud);
   //voxelgridによるダウンサンプリング
@@ -67,7 +67,7 @@ void PCL_segmentation::planeDetect()
 {
   //inliers : 平面抽出で得た点群のインデックス inliers.indices[0]
   //coefficients : 三次元平面方程式の未知数 ax+by+cz+d
-  debug();
+//  debug();
   pcl::SACSegmentation<PointT> seg;
   seg.setOptimizeCoefficients(true);
   seg.setInputCloud (cloud.makeShared());
@@ -80,10 +80,10 @@ void PCL_segmentation::planeDetect()
     PCL_ERROR ("Could not estimate a planar model for the given dataset.");
 //    return (-1);
   }
-  std::cerr << "Model coefficients:" << coefficients.values[0] << "x"
+/*  std::cerr << "Model coefficients:" << coefficients.values[0] << "x"
                                      << coefficients.values[1] << "y"
                                      << coefficients.values[2] << "z"
-                                     << coefficients.values[3] << std::endl ;
+                                     << coefficients.values[3] << std::endl ;*/
   
   sensor_msgs::PointCloud2 cloud_seg;
   pcl::ExtractIndices<PointT> extract ;
@@ -114,8 +114,8 @@ void PCL_segmentation::planeRemove()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "plane_segment");
-  debug();
+//  debug();
   PCL_segmentation pcl_segmentation;
-  debug();
+//  debug();
   ros::spin();
 }

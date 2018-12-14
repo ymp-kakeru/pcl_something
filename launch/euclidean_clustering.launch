@@ -3,9 +3,9 @@
   <include file="$(find pcl_something)/launch/plane_segment.launch"/>
 
   <node name="Euclid_Cluster_Extraction" pkg="pcl_something" type="euclidean_clustering">
-    <param name="tolerance" value="0.05"/>
+    <param name="tolerance" value="0.2"/>
     <param name="min_cluster" value="100"/>
-    <param name="max_cluster" value="10000"/>
+    <param name="max_cluster" value="30000"/>
   </node>
   
 </launch>
