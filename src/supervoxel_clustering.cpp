@@ -2,7 +2,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include <pcl/console.h>
+#include <pcl/console/parse.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
@@ -13,12 +13,12 @@
 #include <pcl/segmentation/supervoxel_clustering.h>
 #include <vtkPolyLine.h> //for drawing graph line 
 
-typedef pcl::PointXYZRGB PointT;
+typedef pcl::PointXYZRGBA PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
 typedef pcl::PointNormal PointN;
 typedef pcl::PointCloud<PointN> PointCloudN;
 typedef pcl::PointXYZL PointL;
-typedef pcl::PointCloud<PointT> PointCloudL;
+typedef pcl::PointCloud<PointL> PointCloudL;
 
 void addSupervoxelConnectionsToViewer(PointT & supervoxel_center , PointCloudT & adjacent_supervoxel_centers,
                                       std::string supervoxel_name, boost::shared_ptr<pcl::visualization::PCLVisualizer> & viewer);
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
             << "-s : seed resolution" << "\n"                    //シードサイズ．スーパーボクセルの大きさ
             << "-c : color weight" << "\n"                       //色の重み．どのくらいの色がスーパーボクセルの形状に影響するか
             << "-z : spatial weight" << "\n"                     //空間項の重み．値を大きくするとボクセルが規則的な形状になる．
-            << "-n : normal weight" << << std::endl;             //法線の重み．サーフェス法線がどれだけボクセル形状に影響するか
+            << "-n : normal weight" << std::endl;             //法線の重み．サーフェス法線がどれだけボクセル形状に影響するか
   return(1);
   }
 /*****************************************/
@@ -47,14 +47,14 @@ int main(int argc, char** argv)
   }
   bool disabele_transform = pcl::console::find_switch(argc,argv,"--NT");
   
-  float voxel_resolution = 0.010f;
+  float voxel_resolution = 0.020f;
   bool voxel_res_specified = pcl::console::find_switch(argc,argv,"-v");
   if(voxel_res_specified) pcl::console::parse(argc,argv,"-v",voxel_resolution);
 
   float seed_resolution = 0.1f;
   if(pcl::console::find_switch(argc,argv,"-s")) pcl::console::parse(argc,argv,"-s",seed_resolution);
 
-  float color_importance = 0.010f;
+  float color_importance = 0.1f;
   if(pcl::console::find_switch(argc,argv,"-c")) pcl::console::parse(argc,argv,"-c",color_importance);
 
   float spatial_importance = 0.4f;
@@ -66,9 +66,10 @@ int main(int argc, char** argv)
 /***************************************/
 /********* SuperVoxel Clustering *******/
 /***************************************/
-  pcl::SupervoxelClustering<PointT> super(voxel_resolution, seed_resolution);
-  if(disabele_transform)
-  super.setUseSingleCameraTransform(false);
+  pcl::SupervoxelClustering<PointT> super(voxel_resolution, seed_resolution,false);
+/*  if(disabele_transform){
+    super.setUseSingleCameraTransform(false);
+  }*/
   super.setInputCloud(cloud);
   super.setColorImportance(color_importance);
   super.setSpatialImportance(spatial_importance);
@@ -88,9 +89,9 @@ int main(int argc, char** argv)
   viewer -> setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2.0, "voxel centroids");
   viewer -> setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, 0.95, "voxel centroids");
 
-  PointCloudL::Ptr labeled_voxel_cloud = super.getLabeledVoxelCloud();
-  viewer -> addPointCloud(labeled_voxel_cloud, "labeled voxels");
-  viewer -> setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, 0.8, "labeled voxels");
+  PointCloudL :: Ptr labeled_voxel_cloud = super . getLabeledVoxelCloud ();
+  // viewer -> addPointCloud ( labeled_voxel_cloud , "labeled voxels" );
+  viewer -> setPointCloudRenderingProperties ( pcl :: visualization :: PCL_VISUALIZER_OPACITY , 0.8 , "labeled voxels" );
 
   PointCloudN::Ptr sv_normal_cloud = super.makeSupervoxelNormalCloud(supervoxel_clusters);
   viewer -> addPointCloudNormals<PointN>(sv_normal_cloud, 1, 0.05f, "supervoxel normals");
@@ -98,9 +99,10 @@ int main(int argc, char** argv)
   std::cerr << "Getting Supervoxel adjacency" << std::endl;
   std::multimap <uint32_t, uint32_t> supervoxel_adjacency;
   super.getSupervoxelAdjacency(supervoxel_adjacency); //スーパーボクセル隣接リストの抽出
-
+  std::cerr << __LINE__ << std::endl;
   //マルチマップ処理を繰り返して、各スーパーボクセルの隣接ボクセルの重心の点群を作成する
-  std::multimap<uint32_t, uint32_t>::iterator label_itr = supervoxel_adjacency.begin();
+  std::multimap<uint32_t, uint32_t>::iterator label_itr  = supervoxel_adjacency.begin();
+  std::cerr << __LINE__ << std::endl;
   for(;label_itr != supervoxel_adjacency.end();)
   {
     //First get the label
@@ -113,8 +115,8 @@ int main(int argc, char** argv)
     for(; adjacent_itr != supervoxel_adjacency.equal_range(supervoxel_label).second ; ++adjacent_itr)
     {
       pcl::Supervoxel<PointT>::Ptr neighbor_supervoxel = supervoxel_clusters.at(adjacent_itr -> second);
-      adjacent_supervoxel_centers.push_back(neighbor_supervoxel -> centroid_);
-    }
+      adjacent_supervoxel_centers.push_back( neighbor_supervoxel -> centroid_);
+   }
     //Now we make a name for this polygon
     std :: stringstream ss ;
     ss << "supervoxel_" << supervoxel_label ;
