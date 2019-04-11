@@ -89,9 +89,13 @@ int main(int argc, char** argv)
   viewer -> setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2.0, "voxel centroids");
   viewer -> setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, 0.95, "voxel centroids");
 
-  PointCloudL :: Ptr labeled_voxel_cloud = super . getLabeledVoxelCloud ();
-  // viewer -> addPointCloud ( labeled_voxel_cloud , "labeled voxels" );
-  viewer -> setPointCloudRenderingProperties ( pcl :: visualization :: PCL_VISUALIZER_OPACITY , 0.8 , "labeled voxels" );
+/*  PointCloudL::Ptr labeled_voxel_cloud = super.getLabeledVoxelCloud ();
+  viewer -> addPointCloud(labeled_voxel_cloud, "labeled voxels");
+  viewer -> setPointCloudRenderingProperties ( pcl :: visualization :: PCL_VISUALIZER_OPACITY , 0.8 , "labeled voxels" );*/
+
+  PointCloudT::Ptr colored_voxel_cloud = super.getColoredVoxelCloud();
+  viewer -> addPointCloud(colored_voxel_cloud, "colored voxels");
+  viewer -> setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY,0.8,"colored voxels");
 
   PointCloudN::Ptr sv_normal_cloud = super.makeSupervoxelNormalCloud(supervoxel_clusters);
   viewer -> addPointCloudNormals<PointN>(sv_normal_cloud, 1, 0.05f, "supervoxel normals");

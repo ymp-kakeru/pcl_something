@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5.1)
 project(pcl_something)
 
 set(CMAKE_CXX_STANDARD 14)
+#set(VTK_DIR )
 
 find_package(PCL REQUIRED COMPONENTS
 	core
@@ -21,6 +22,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
 )
 
+find_package(VTK REQUIRED)
+
 catkin_package(
 )
 
@@ -28,6 +31,8 @@ include_directories(include
 	${catkin_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
 )
+
+include(${VTK_USE_FILE})
 
 set(LIBS
 	${catkin_LIBRARIES}
@@ -39,11 +44,11 @@ add_executable(planeDetect src/plane_segment.cpp)
 add_executable(example src/example.cpp)
 add_executable(euclidean_clustering src/euclidean_cluster.cpp)
 add_executable(supervoxel_clustering src/supervoxel_clustering.cpp)
-
-# add_executable(euclidean_clustering src/euclid_alone.cpp)
+add_executable(euclidean_alone src/euclid_alone.cpp)
 
 target_link_libraries(example ${catkin_LIBRARIES})
 target_link_libraries(pcl_grid_node ${LIBS})
 target_link_libraries(planeDetect ${LIBS})
 target_link_libraries(euclidean_clustering ${LIBS})
+target_link_libraries(euclidean_alone ${LIBS})
 target_link_libraries(supervoxel_clustering ${LIBS})
