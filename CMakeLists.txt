@@ -10,6 +10,7 @@ find_package(PCL REQUIRED COMPONENTS
 	io
 	segmentation
   pcl_conversions
+  octree
 )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -39,16 +40,21 @@ set(LIBS
 	${PCL_LIBRARIES}
 )
 
-add_executable(pcl_grid_node src/pcl_grid.cpp)
+#[[add_executable(pcl_grid_node src/pcl_grid.cpp)
 add_executable(planeDetect src/plane_segment.cpp)
 add_executable(example src/example.cpp)
 add_executable(euclidean_clustering src/euclidean_cluster.cpp)
 add_executable(supervoxel_clustering src/supervoxel_clustering.cpp)
 add_executable(euclidean_alone src/euclid_alone.cpp)
+]]
+add_executable(dbscan src_now/voxel_dbscan.cpp)
 
-target_link_libraries(example ${catkin_LIBRARIES})
+#[[target_link_libraries(example ${catkin_LIBRARIES})
 target_link_libraries(pcl_grid_node ${LIBS})
 target_link_libraries(planeDetect ${LIBS})
 target_link_libraries(euclidean_clustering ${LIBS})
 target_link_libraries(euclidean_alone ${LIBS})
 target_link_libraries(supervoxel_clustering ${LIBS})
+]]
+
+target_link_libraries(dbscan &{[LIBS]})
