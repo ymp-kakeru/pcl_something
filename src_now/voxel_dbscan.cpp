@@ -5,6 +5,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/octree/octree_impl.h> //octreeの各種テンプレートの使用にはここのマクロ？が必要らしい。Densityだけっぽいけど
 #include <pcl/octree/octree_pointcloud_density.h>
+#include <pcl/octree/octree_nodes.h>
+#include <pcl/octree/octree_iterator.h>
 
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
@@ -51,19 +53,28 @@ void VoxelDBSCAN::GenerateOctree()
     cloud_in->points[i].y = 1024.0f * rand() / (RAND_MAX + 1.0f);
     cloud_in->points[i].z = 1024.0f * rand() / (RAND_MAX + 1.0f);
   }
-  
+
   /* make octree  */
   pcl::octree::OctreePointCloudDensity<PointT> octree(resolution_tree);
   octree.setInputCloud(cloud_in);
   octree.addPointsFromInputCloud();
 
   /* octree leaf iterator */
-  pcl::octree::OctreePointCloud<PointT>::LeafNode it_leaf(octree);
-/*  for(std::vector<int>::const_iterator it=octree.leaf_begin(); it!=octree.leaf_end(); ++it)
+  std::vector<int> indexVector;
+//  pcl::octree::OctreePointCloud<PointT>::LeafNode leaf_it(octree);
+/*  while(leaf_it.operator++())
+  {
+//    pcl::octree::OctreePointCloud<PointT>::LeafNode *node = *leaf_it;
+//    std::cout << octree.getVoxelDensityAtPoint(leaf_it.operator*()) << std::endl ;
+//    std::cout << octree.getVoxelDensityAtPoint(PointT(1,1,1)) << std::endl ;
+  }*/
+
+/*  for(pcl::octree::OctreePointCloud<PointT>:: node=octree.leaf_begin(); node!=octree.leaf_end(); ++node)
   {
      std::cout << octree.getVoxelDensityAtPoint(it) << std::endl ;
   }*/
 
+//  std::cout << octree.getResolution() << std::endl ;
 }
 
 
