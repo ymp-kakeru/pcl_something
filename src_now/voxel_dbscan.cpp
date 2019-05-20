@@ -44,21 +44,20 @@ void VoxelDBSCAN::GenerateOctree()
 {
   /* include point cloud data */
   pcl::PCDReader reader;
-  PointCloudT cloud_in;
   reader.read("/home/ymp/catkin_ws/src/pcl_something/table_scene_lms400.pcd",*cloud_in);
   std::cout << "get PointCloud" << std::endl;
   /* make octree  */
-  pcl::octree::OctreePointCloud<PointT> octree(resolution_tree);
+  pcl::octree::OctreePointCloudDensity<PointT> octree(resolution_tree);
   octree.setInputCloud(cloud_in);
   octree.addPointsFromInputCloud();
 
   /* octree leaf iterator */
   std::vector<int> indexVector;
-  pcl::octree::OctreePointCloud<PointT>::LeafNodeIterator leaf_it(&octree);
+  pcl::octree::OctreePointCloudDensity<PointT>::LeafNodeIterator leaf_it(&octree);
   while(*++leaf_it)
   {
 //    pcl::octree::OctreePointCloud<PointT>::LeafNode *node = *leaf_it;
-//    std::cout << octree.getVoxelDensityAtPoint(leaf_it.operator*()) << std::endl ;
+    std::cout << octree.getVoxelDensityAtPoint(leaf_it.operator*()) << std::endl ;
 //    std::cout << octree.getVoxelDensityAtPoint(PointT(1,1,1)) << std::endl ;
   }
 
