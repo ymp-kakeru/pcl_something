@@ -16,7 +16,6 @@
 int  
 main (int argc, char** argv)  
 { 
-  debug(); 
   // Read in the cloud data  
   pcl::PCDReader reader;  
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);  
@@ -47,7 +46,6 @@ main (int argc, char** argv)
   while (cloud_filtered->points.size () > 0.1 * nr_points)  
     {  
       // Segment the largest planar component from the remaining cloud  
-      debug();
       seg.setInputCloud(cloud_filtered);  
       seg.segment (*inliers, *coefficients); //*  
       // Extract the planar inliers from the input cloud  
@@ -59,7 +57,6 @@ main (int argc, char** argv)
       // Write the planar inliers to disk  
       extract.filter (*cloud_plane); //*  
       std::cout << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;  
-      debug();
       // Remove the planar inliers, extract the rest  
       extract.setNegative (true);  
       extract.filter (*cloud_filtered); //*  
@@ -77,7 +74,6 @@ main (int argc, char** argv)
   ec.setSearchMethod (tree);  
   ec.setInputCloud( cloud_filtered);  
   ec.extract (cluster_indices);  
-  debug();
   int j = 0;  
   float colors[6][3] ={{255, 0, 0}, {0,255,0}, {0,0,255}, {255,255,0}, {0,255,255}, {255,0,255}};  
   pcl::visualization::CloudViewer viewer("cluster viewer");  
@@ -87,7 +83,6 @@ main (int argc, char** argv)
     {  
       for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); pit++) 
       {  
-              debug();
         cloud_cluster->points[*pit].r = colors[j%6][0];  
         cloud_cluster->points[*pit].g = colors[j%6][1];  
         cloud_cluster->points[*pit].b = colors[j%6][2];  
